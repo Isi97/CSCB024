@@ -41,7 +41,7 @@ class MainWindow(wx.Frame):
         self.adjust = wx.CheckBox(self, label="Adjust for microphone noise: ")
         self.adjust.SetValue(config.getboolean('DEFAULT', 'adjust'))
         self.Bind(wx.EVT_CHECKBOX, self.eventAdjust, self.adjust)
-        self.labelAdjust = wx.StaticText(self, label="Comprehension speed normal")
+        self.labelAdjust = wx.StaticText(self, label="Comprehension speed: normal")
         
         self.rowAdjust = wx.BoxSizer(wx.HORIZONTAL)
         self.rowAdjust.Add(self.adjust)
