@@ -12,6 +12,10 @@ pyttsx3
 
 pypiwin32
 
-BeautifulSoup4
+pymetar
 
-## Python 3.5 only
+feedparser
+
+## Python 3.5
+
+run createConfig.py once in the directory before running main.py
