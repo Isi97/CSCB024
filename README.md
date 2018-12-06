@@ -58,4 +58,4 @@ feedparser
 
 ## Python 3.5
 
-run createConfig.py once in the directory before running main.py
+make sure settings.ini and a plugins folder are present in the directory
