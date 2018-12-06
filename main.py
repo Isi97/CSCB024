@@ -12,13 +12,15 @@ config.read('settings.ini')
 
 commandString = ""
 
-#need to make MainWindow extend panel and add it to a frame, enables scrolling throguh UI elements with Tab
+# need to make MainWindow extend panel and add it to a frame, enables scrolling throguh UI elements with Tab
 class MainWindow(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, wx.ID_ANY, "CSCB024", size=(400, 600), style=wx.CAPTION )
-        
+        self.WIDTH = 400
+        self.HEIGHT = 600
+
+        wx.Frame.__init__(self, None, wx.ID_ANY, "CSCB024", size=(self.WIDTH, self.HEIGHT), style=wx.CAPTION )
         self.SetBackgroundColour('white')
-        self.SetSizeHints(400,600,400,600)
+        self.SetSizeHints(self.WIDTH,self.HEIGHT,self.WIDTH,self.HEIGHT)
 
         self.offlineMode = config.getboolean('SETTINGS', 'offline')
         self.adjustMode = config.getboolean('SETTINGS', 'adjust')
@@ -53,23 +55,23 @@ class MainWindow(wx.Frame):
         self.rowButton.Add(self.buttonListen, wx.ALIGN_LEFT)
         self.rowButton.Add(self.buttonExit, wx.ALIGN_RIGHT)
 
-        self.buttonAlarm = wx.Button(self, label="Set Alarm")
-        self.buttonAlarm.Bind(wx.EVT_BUTTON, self.eventAlarm)
-        self.rowAlarm = wx.BoxSizer(wx.HORIZONTAL)
-        self.rowAlarm.Add(self.buttonAlarm)
+        self.textCommands = wx.TextCtrl(self, size=(self.WIDTH, -1), style = wx.TE_PROCESS_ENTER)
+        self.textCommands.SetHint("Command + Enter")
+        self.textCommands.Bind(wx.EVT_TEXT_ENTER, self.eventSubmit)
+        self.rowCommands = wx.BoxSizer(wx.HORIZONTAL)
+        self.rowCommands.Add(self.textCommands)
 
         self.sizer.Add(self.rowButton)
         self.sizer.Add(self.rowOffline)
         self.sizer.Add(self.rowAdjust)
-        self.sizer.Add(self.rowAlarm)
 
-        self.console = wx.TextCtrl(self, size=(400,-1),style = wx.TE_MULTILINE | wx.TE_READONLY )
+        self.console = wx.TextCtrl(self, size=(self.WIDTH,-1),style = wx.TE_MULTILINE | wx.TE_READONLY )
         self.sizer.Add(self.console, wx.EXPAND)
-        
+
+        self.sizer.Add(self.rowCommands)
 
         self.SetSizer(self.sizer)
         self.SetAutoLayout(1)
-        #self.sizer.Fit(self)
 
         self.updateLabels()
         self.Centre()
@@ -98,7 +100,7 @@ class MainWindow(wx.Frame):
             self.labelAdjust.Label = "Comprehension speed normal"
 
     def getAudio(self):
-        with sr.Microphone(device_index=1) as source: #this index is currently making sure it's using a good mic, need to configure for other devices
+        with sr.Microphone() as source: # index = can be added as a parameter for Microphone in the event of multiple connected audio inputs
             if self.adjustMode: 
                 recognizer.adjust_for_ambient_noise(source)
             self.output("Listening for commands: ")
@@ -123,9 +125,12 @@ class MainWindow(wx.Frame):
         with open('settings.ini', 'w+') as configfile:
             config.write(configfile)
         exit()
-
-    def eventAlarm(self, event):
-        pass
+    
+    def eventSubmit(self, event):
+        command = self.textCommands.GetValue()
+        self.textCommands.Clear()
+        self.console.AppendText(command+"\n")
+        commands.getCommand(command)
 
     def updateLabels(self):
         if self.adjustMode:
@@ -141,18 +146,20 @@ class MainWindow(wx.Frame):
     def output(self, text):
         self.console.AppendText(text+"\n")    
             
-#print(sr.Microphone.list_microphone_names()) #use this to debug device indexes when running on new machine
+# print(sr.Microphone.list_microphone_names()) #use this to debug device indexes when running on new machine
 
 
-app = wx.App()
-frame = MainWindow()
 
-'''
-Assigning values to the commands module which are needed to interract with the GUI
-This avoids passing around the 'bigger' config object, reading the file twice, and a circular import
-'''
-commands.uinterface = frame
-commands.weatherCode = config['SETTINGS']['weathercode']
+def initialize():
+    app = wx.App()
+    frame = MainWindow()
 
-app.MainLoop()
+    # Assigning values to the commands module which are needed to interract with the GUI
+    commands.initialize(frame=frame, code=config['SETTINGS']['weathercode'])
 
+    app.MainLoop()
+
+
+
+if __name__ == "__main__":
+    initialize()

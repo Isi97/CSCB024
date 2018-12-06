@@ -1,4 +1,5 @@
 from datetime import datetime
+from sys import platform
 import threading
 import time
 
@@ -7,22 +8,38 @@ import wx
 import pymetar
 import feedparser
 
+import pluginManager
 
-tts = pyttsx3.init('sapi5') #this driver is windows specific, espeak for other non-max platforms 
-#but windows pip currently not installing drivers need to be downloaded manually to test
+if platform == "linux" or platform == "linux2":
+    tts = pyttsx3.init() 
+else:
+    # this driver is windows specific, espeak for other non-max platforms 
+    tts = pyttsx3.init('sapi5') 
 
-tts.setProperty('rate', 150)
-weatherCode = ""
 
-#this variable will be populated with a wx.FRAME object when this module is loaded from the main file
+tts.setProperty('rate', 150) #default rate is a bit too robotic, 150 makes it less so
+weatherCode = "undeclared"
+
+# this variable will be populated with a wx.FRAME object when this module is loaded from the main file
 uinterface = None
+
+commandList = ["repeat/say", "date/calendar", "time", "full time", "clear", "weather", "feed", "alarm", "help", "exit"]
+
+def initialize(frame, code):
+    global uinterface
+    global weatherCode
+
+    uinterface = frame
+    weatherCode = code
+    pluginManager.initialize(uinterface)
 
 def getCommand(command):
     if command == "exit":
         exit()
-    elif command.startswith("repeat"):
-        #temp = command.split(' ', 1)
-        say(command)
+    elif command.startswith("repeat") or command.startswith("say"):
+        temp = command.split(' ', 1)
+        if len(temp) > 1:
+            say(temp[1])
     elif command == "date" or command == "calendar":
         date = datetime.now()
         say(date.strftime('%d') + "th of " + date.strftime('%B'))
@@ -33,21 +50,24 @@ def getCommand(command):
         date = datetime.now()
         say(date.strftime('%X'))
     elif command == "clear":
-        return 1
+        uinterface.console.Clear()
     elif command == "weather":
         getWeather()
     elif command == "feed":
         getRSS()
     elif command == "alarm":
         setAlarm()
-    
+    elif command == "help":
+        printCommandList()
+    else:
+        pluginManager.executeCommand(command)
+
 def say(text):
     tts.say(text)
     tts.runAndWait()
 
-#need to make sure fetch is called only once for each city to avoid spamming requests
+# need to make sure fetch is called only once for each city to avoid spamming requests, more commands can be found inside pymetar source code
 def getWeather():
-    print(weatherCode)
     fetch = pymetar.ReportFetcher(weatherCode)
     pars = pymetar.ReportParser(fetch.FetchReport())
     pars.ParseReport()
@@ -74,5 +94,11 @@ def alarm(seconds):
     time.sleep(seconds)
     uinterface.console.AppendText("\n\n###Alarm Completed###\n\n")
 
-#voices = tts.getProperty('voices')
-#tts.setProperty('voice', voices[1].id)
+def printCommandList():
+    uinterface.console.AppendText("Built-In Commands: \n")
+    for k in commandList:
+        uinterface.console.AppendText("\t"+k+"\n")
+    uinterface.console.AppendText("\nCustom Commands: \n")
+    for k in pluginManager.commandDispatch:
+        uinterface.console.AppendText("\t"+k+"\n")
+    uinterface.console.AppendText("\n")
