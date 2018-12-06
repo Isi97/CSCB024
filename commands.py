@@ -102,3 +102,11 @@ def printCommandList():
     for k in pluginManager.commandDispatch:
         uinterface.console.AppendText("\t"+k+"\n")
     uinterface.console.AppendText("\n")
+
+def getCommandList():
+    commands = []
+    for k in commandList:
+        commands.append(k)
+    for k in pluginManager.commandDispatch:
+        commands.append(k)
+    return commands
