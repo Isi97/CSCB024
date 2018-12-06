@@ -157,6 +157,8 @@ def initialize():
     # Assigning values to the commands module which are needed to interract with the GUI
     commands.initialize(frame=frame, code=config['SETTINGS']['weathercode'])
 
+    frame.output("Finished loading.")
+    frame.output("Type 'help' for a list of commands.")
     app.MainLoop()
 
 
