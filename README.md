@@ -28,7 +28,7 @@ sudo apt-get install espeak
 
 ## Installing project dependencies
 
-next one may took time...
+next one may take time...
 ```
 pip3 install wxpython
 ```
@@ -59,3 +59,7 @@ feedparser
 ## Python 3.5
 
 make sure settings.ini and a plugins folder are present in the directory
+
+different weather codes for the configuration file can be found at https://www.aviationweather.gov/metar
+
+an example with instructions on how to create plugins can be found in /plugins, example.py is not recognized as a plugin by the program
