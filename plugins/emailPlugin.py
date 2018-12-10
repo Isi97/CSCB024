@@ -46,6 +46,9 @@ class Plugin:
         t = threading.Thread(target=self.worker)
         t.start()
 
+        frame2 = SecondFrame(parent=None, id=-1)
+        frame2.Show()
+
         try:
             (retcode, capabilities) = self.conn.login(IMAP_USER, IMAP_PASSWORD)
         except:
@@ -74,6 +77,11 @@ class Plugin:
                             #local_date.strftime("%a, %d %b %Y %H:%M:%S"))
 
         self.conn.close()
+
+        #while True:
+            #time.sleep(2)
+            #print('Main thread')
+        
 
     def action(self):
         x = self.showDialog("User input required", "Enter a sentence: ")
@@ -107,6 +115,45 @@ class Plugin:
             time.sleep(2)
             if self.conn != None:
                 print(self.conn)
-                #self.infoBar.ShowMessage("Something happened", wx.ICON_INFORMATION)
+                #wx.CallAfter(self.gauge.SetValue, x)
             print ('Worker')
         return
+
+class SecondFrame(wx.Frame):
+    box = None
+    def __init__(self, parent, id):
+        wx.Frame.__init__(self, parent, id, 'Popup Frame',
+                            size=(350, 200))
+        panelSecond = wx.Panel(self)
+
+        self.box = wx.BoxSizer(wx.VERTICAL) 
+        lbl = wx.StaticText(panelSecond,-1,style = wx.ALIGN_CENTER) 
+        txt = "Python GUI development"  
+        font = wx.Font(10, wx.ROMAN, wx.ITALIC, wx.NORMAL) 
+        lbl.SetFont(font) 
+        lbl.SetLabel(txt) 
+            
+        self.box.Add(lbl,0,wx.ALIGN_CENTER) 
+
+        lbl = wx.StaticText(panelSecond,-1,style = wx.ALIGN_CENTER) 
+        txt = "another"  
+        lbl.SetFont(font) 
+        lbl.SetLabel(txt) 
+        lbl.Wrap(200)
+
+        self.box.Add(lbl,0,wx.ALIGN_CENTER) 
+
+        panelSecond.SetSizer(self.box) 
+        self.Centre() 
+
+        print(len(self.box.GetChildren()))
+
+        #buttonCloseFrame = wx.Button(panelSecond, label="OK!",size=(50, 50))
+
+        #box.Add(buttonCloseFrame,0,wx.ALIGN_CENTER)
+
+        #self.Bind(wx.EVT_BUTTON, self.ClosePress,  buttonCloseFrame)
+        self.Bind(wx.EVT_BUTTON, self.ClosePress)
+ 
+    def ClosePress(self, event):
+        self.Destroy()
