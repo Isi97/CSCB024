@@ -32,6 +32,7 @@ THRESHOLD = 1
 class Plugin:
     conn = None
     stopThread = False
+    notificationBox = None
     def __init__(self, outputfunction=None, dialogfunction=None):
         self.name = ["this calls action", "this will also call action"]
 
@@ -43,11 +44,12 @@ class Plugin:
         
         self.conn = imaplib.IMAP4_SSL(IMAP_SERVER)
 
-        t = threading.Thread(target=self.worker)
-        t.start()
-
         frame2 = SecondFrame(parent=None, id=-1)
         frame2.Show()
+        self.notificationBox = frame2
+
+        t = threading.Thread(target=self.worker)
+        t.start()
 
         try:
             (retcode, capabilities) = self.conn.login(IMAP_USER, IMAP_PASSWORD)
@@ -55,8 +57,8 @@ class Plugin:
             print (sys.exc_info()[1])
             self.stopThread = True
 
-
-        for i in range(self.getNumberOfMessages(), 0, -1):
+        #loop through last 3 messages
+        for i in range( self.getNumberOfMessages(), max(self.getNumberOfMessages() - 3 , 0), -1):
             typ, msg_data = self.conn.fetch(str(i), '(RFC822)')
             if typ != 'OK':
                 print('ERROR getting message {0}'.format(num))
@@ -116,34 +118,20 @@ class Plugin:
             if self.conn != None:
                 print(self.conn)
                 #wx.CallAfter(self.gauge.SetValue, x)
+                wx.CallAfter(self.notificationBox.addNewMsg, 'dsadsa')
             print ('Worker')
         return
 
 class SecondFrame(wx.Frame):
-    box = None
+    panel = None
+    font = None
     def __init__(self, parent, id):
         wx.Frame.__init__(self, parent, id, 'Popup Frame',
                             size=(350, 200))
-        panelSecond = wx.Panel(self)
-
-        self.box = wx.BoxSizer(wx.VERTICAL) 
-        lbl = wx.StaticText(panelSecond,-1,style = wx.ALIGN_CENTER) 
-        txt = "Python GUI development"  
-        font = wx.Font(10, wx.ROMAN, wx.ITALIC, wx.NORMAL) 
-        lbl.SetFont(font) 
-        lbl.SetLabel(txt) 
-            
-        self.box.Add(lbl,0,wx.ALIGN_CENTER) 
-
-        lbl = wx.StaticText(panelSecond,-1,style = wx.ALIGN_CENTER) 
-        txt = "another"  
-        lbl.SetFont(font) 
-        lbl.SetLabel(txt) 
-        lbl.Wrap(200)
-
-        self.box.Add(lbl,0,wx.ALIGN_CENTER) 
-
-        panelSecond.SetSizer(self.box) 
+        self.panel = wx.Panel(self)
+        self.box = wx.BoxSizer(wx.VERTICAL)
+        self.font = wx.Font(10, wx.ROMAN, wx.ITALIC, wx.NORMAL) 
+        self.panel.SetSizer(self.box) 
         self.Centre() 
 
         print(len(self.box.GetChildren()))
@@ -157,3 +145,24 @@ class SecondFrame(wx.Frame):
  
     def ClosePress(self, event):
         self.Destroy()
+
+    def addNewMsg(self, msg):
+        if len(self.box.GetChildren()) > 2:
+            size = len(self.box.GetChildren())
+            self.box.Hide(0)
+            self.box.Remove(0)
+            #self.box.Remove(len(self.box.GetChildren())-2)
+            #self.box.Clear()
+
+        lbl = wx.StaticText(self.panel,-1,style = wx.ALIGN_CENTER) 
+        lbl.SetFont(self.font)
+        lbl.SetLabel("{0}{1}".format(datetime.datetime.now(), msg)) 
+        lbl.Wrap(200)
+        self.box.Add(lbl,0,wx.ALIGN_CENTER)
+
+        self.panel.SetAutoLayout(True)
+        self.panel.Refresh()
+        self.panel.Update()
+        self.panel.Layout() 
+
+        #print(len(self.box.GetChildren()))
