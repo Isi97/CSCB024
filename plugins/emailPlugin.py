@@ -57,34 +57,6 @@ class Plugin:
             print (sys.exc_info()[1])
             self.stopThread = True
 
-        #loop through last 3 messages
-        for i in range( self.getNumberOfMessages(), max(self.getNumberOfMessages() - 3 , 0), -1):
-            typ, msg_data = self.conn.fetch(str(i), '(RFC822)')
-            if typ != 'OK':
-                print('ERROR getting message {0}'.format(num))
-                self.conn.close()
-                return
-            for response_part in msg_data:
-                if isinstance(response_part, tuple):
-                    msg = email.message_from_string(response_part[1].decode("utf-8"))
-                    #for header in [ 'subject' ]:
-                        #print( msg[header])
-                    #print(msg['Date'])
-                    date_tuple = email.utils.parsedate_tz(msg['Date'])
-                    if date_tuple:
-                        local_date = datetime.datetime.fromtimestamp(
-                            email.utils.mktime_tz(date_tuple))
-                        print( 'Date: ' ,local_date, 'Subject: ' , msg['subject'])
-                        #print ("Local Date:", \
-                            #local_date.strftime("%a, %d %b %Y %H:%M:%S"))
-
-        self.conn.close()
-
-        #while True:
-            #time.sleep(2)
-            #print('Main thread')
-        
-
     def action(self):
         x = self.showDialog("User input required", "Enter a sentence: ")
         self.out("All the way from plugin land\t" + x)
@@ -108,29 +80,43 @@ class Plugin:
         return count
 
     def worker(self):
-        """thread worker function"""
+        """thread worker get last message"""
         self.stopThread = False
         while True:
             if self.stopThread == True:
                 print('notification thread stopped')
+                self.conn.close()
                 return
-            time.sleep(2)
+            time.sleep(10)
             if self.conn != None:
-                print(self.conn)
-                #wx.CallAfter(self.gauge.SetValue, x)
-                wx.CallAfter(self.notificationBox.addNewMsg, 'dsadsa')
-            print ('Worker')
-        return
+                #loop through last 3 messages
+                for i in range( self.getNumberOfMessages(), max(self.getNumberOfMessages() - 3 , 0), -1):
+                    typ, msg_data = self.conn.fetch(str(i), '(RFC822)')
+                    if typ != 'OK':
+                        print('ERROR getting message {0}'.format(num))
+                        self.conn.close()
+                        return
+                    for response_part in msg_data:
+                        if isinstance(response_part, tuple):
+                            msg = email.message_from_string(response_part[1].decode("utf-8"))
+                            date_tuple = email.utils.parsedate_tz(msg['Date'])
+                            if date_tuple:
+                                local_date = datetime.datetime.fromtimestamp(email.utils.mktime_tz(date_tuple))
+                                currentTime = datetime.datetime.now()
+                                if local_date + datetime.timedelta(seconds=22) > currentTime:
+                                    #print(msg['subject'])
+                                    formatted = local_date.strftime("%Y-%m-%d %H:%M:%S")
+                                    wx.CallAfter(self.notificationBox.addNewMsg, 'Message: # {} Date: {} Subject: {}'.format(i, formatted , msg['subject']))
 
 class SecondFrame(wx.Frame):
     panel = None
     font = None
     def __init__(self, parent, id):
-        wx.Frame.__init__(self, parent, id, 'Popup Frame',
-                            size=(350, 200))
+        wx.Frame.__init__(self, parent, id, 'Email notifications',
+                            size=(750, 500))
         self.panel = wx.Panel(self)
         self.box = wx.BoxSizer(wx.VERTICAL)
-        self.font = wx.Font(10, wx.ROMAN, wx.ITALIC, wx.NORMAL) 
+        self.font = wx.Font(8, wx.ROMAN, wx.ITALIC, wx.NORMAL) 
         self.panel.SetSizer(self.box) 
         self.Centre() 
 
@@ -156,8 +142,8 @@ class SecondFrame(wx.Frame):
 
         lbl = wx.StaticText(self.panel,-1,style = wx.ALIGN_CENTER) 
         lbl.SetFont(self.font)
-        lbl.SetLabel("{0}{1}".format(datetime.datetime.now(), msg)) 
-        lbl.Wrap(200)
+        lbl.SetLabel(msg) 
+        lbl.Wrap(600)
         self.box.Add(lbl,0,wx.ALIGN_CENTER)
 
         self.panel.SetAutoLayout(True)
