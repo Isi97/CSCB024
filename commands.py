@@ -58,6 +58,7 @@ def getCommand(command):
     elif command == "alarm":
         setAlarm()
     elif command == "help":
+        uinterface.console.Clear()
         printCommandList()
     else:
         pluginManager.executeCommand(command)
