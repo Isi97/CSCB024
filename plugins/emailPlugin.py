@@ -33,8 +33,10 @@ class Plugin:
     conn = None
     stopThread = False
     notificationBox = None
+    connected = False
+
     def __init__(self, outputfunction=None, dialogfunction=None):
-        self.name = ["this calls action", "this will also call action"]
+        self.name = ["email"]
 
         if outputfunction is not None:
             self.out = outputfunction
@@ -44,23 +46,28 @@ class Plugin:
         
         self.conn = imaplib.IMAP4_SSL(IMAP_SERVER)
 
-        frame2 = SecondFrame(parent=None, id=-1)
-        frame2.Show()
-        self.notificationBox = frame2
-
-        t = threading.Thread(target=self.worker)
-        t.start()
-
-        try:
-            (retcode, capabilities) = self.conn.login(IMAP_USER, IMAP_PASSWORD)
-        except:
-            print (sys.exc_info()[1])
-            self.stopThread = True
+        self.frame2 = None
+        self.notificationBox = None
+        
 
     def action(self):
-        x = self.showDialog("User input required", "Enter a sentence: ")
-        self.out("All the way from plugin land\t" + x)
-    
+        self.frame2 = SecondFrame(parent=None, id=-1)
+        self.notificationBox = self.frame2
+        self.frame2.Show()
+
+        if self.connected == False:
+            self.t = threading.Thread(target=self.worker)
+            self.t.daemon = True
+            self.t.start()
+
+            try:
+                (retcode, capabilities) = self.conn.login(IMAP_USER, IMAP_PASSWORD)
+                self.stopThread = False
+                self.connected = True
+            except:
+                print (sys.exc_info()[1])
+                self.stopThread = True
+
     def getNumberOfMessages(self):
         """tries to count all messages"""
         if self.conn == None:
@@ -130,6 +137,7 @@ class SecondFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.ClosePress)
  
     def ClosePress(self, event):
+        Plugin.stopThread = True
         self.Destroy()
 
     def addNewMsg(self, msg):
