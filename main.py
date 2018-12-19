@@ -166,7 +166,7 @@ def initialize():
     app = wx.App()
     frame = MainWindow()
 
-    # Assigning values to the commands module which are needed to interract with the GUI
+    # Assigning values to the commands module which are needclsed to interract with the GUI
     commands.initialize(frame=frame, code=config['SETTINGS']['weathercode'])
 
     frame.loadCommands()
