@@ -89,6 +89,7 @@ def setAlarm():
     if dialog.ShowModal() == wx.ID_OK:
         seconds = int(dialog.GetValue()) * 60
         alarmThread = threading.Thread(target=lambda: alarm(seconds))
+        alarmThread.daemon = True
         alarmThread.start()
 
 def alarm(seconds):
