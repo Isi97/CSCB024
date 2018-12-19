@@ -61,9 +61,18 @@ class MainWindow(wx.Frame):
         self.rowCommands = wx.BoxSizer(wx.HORIZONTAL)
         self.rowCommands.Add(self.textCommands)
 
+
+        self.commandCombo = wx.ComboBox(self)
+        self.commandComboRun = wx.Button(self, label="run")
+        self.commandComboRun.Bind(wx.EVT_BUTTON, lambda x: commands.getCommand(self.commandCombo.GetValue()))
+        self.rowCommandsUI = wx.BoxSizer(wx.HORIZONTAL)
+        self.rowCommandsUI.Add(self.commandCombo)
+        self.rowCommandsUI.Add(self.commandComboRun)
+
         self.sizer.Add(self.rowButton)
         self.sizer.Add(self.rowOffline)
         self.sizer.Add(self.rowAdjust)
+        self.sizer.Add(self.rowCommandsUI)
 
         self.console = wx.TextCtrl(self, size=(self.WIDTH,-1),style = wx.TE_MULTILINE | wx.TE_READONLY )
         self.sizer.Add(self.console, wx.EXPAND)
@@ -144,7 +153,10 @@ class MainWindow(wx.Frame):
             self.labelOffline.Label = "Using Google"
 
     def output(self, text):
-        self.console.AppendText(text+"\n")    
+        self.console.AppendText(text+"\n")
+
+    def loadCommands(self):
+        self.commandCombo.SetItems(commands.getCommandList())
             
 # print(sr.Microphone.list_microphone_names()) #use this to debug device indexes when running on new machine
 
@@ -157,8 +169,10 @@ def initialize():
     # Assigning values to the commands module which are needed to interract with the GUI
     commands.initialize(frame=frame, code=config['SETTINGS']['weathercode'])
 
+    frame.loadCommands()
     frame.output("Finished loading.")
     frame.output("Type 'help' for a list of commands.")
+
     app.MainLoop()
 
 
