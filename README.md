@@ -56,6 +56,8 @@ pymetar
 
 feedparser
 
+praw (for plugins/socialPlugin reddit API wrapper)
+
 ## Python 3.5
 
 make sure settings.ini and a plugins folder are present in the directory
