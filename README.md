@@ -65,3 +65,5 @@ make sure settings.ini and a plugins folder are present in the directory
 different weather codes for the configuration file can be found at https://www.aviationweather.gov/metar
 
 an example with instructions on how to create plugins can be found in /plugins, example.py is not recognized as a plugin by the program
+
+current email address being used for testing purposes: golyamatoyaga@gmail.com
