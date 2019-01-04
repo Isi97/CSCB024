@@ -36,7 +36,7 @@ class Plugin:
     connected = False
 
     def __init__(self, outputfunction=None, dialogfunction=None):
-        self.name = ["email"]
+        self.name = ["email", "e-mail"]
 
         if outputfunction is not None:
             self.out = outputfunction

@@ -3,7 +3,7 @@ from sys import platform
 import threading
 import time
 
-import pyttsx3
+import pyttsx
 import wx
 import pymetar
 import feedparser
@@ -11,7 +11,7 @@ import feedparser
 import pluginManager
 
 if platform == "linux" or platform == "linux2":
-    tts = pyttsx3.init() 
+    tts = pyttsx.init() 
 else:
     # this driver is windows specific, espeak for other non-max platforms 
     tts = pyttsx3.init('sapi5') 
@@ -36,13 +36,12 @@ def initialize(frame, code):
 def getCommand(command):
     if command == "exit":
         exit()
-    elif command.startswith("repeat") or command.startswith("say"):
-        temp = command.split(' ', 1)
-        if len(temp) > 1:
-            say(temp[1])
+    elif command == "repeat" or command == "say":
+        say(uinterface.getLine())
     elif command == "date" or command == "calendar":
         date = datetime.now()
-        say(date.strftime('%d') + "th of " + date.strftime('%B'))
+        #say(date.strftime('%d') + "th of " + date.strftime('%B'))
+        uinterface.console.AppendText(date.strftime('%d') + "th of " + date.strftime('%B')+"\n")
     elif command == "time":
         date = datetime.now()
         say(date.strftime('%I %M %p'))
@@ -51,9 +50,9 @@ def getCommand(command):
         say(date.strftime('%X'))
     elif command == "clear":
         uinterface.console.Clear()
-    elif command == "weather":
+    elif command == "weather" or command == "whether":
         getWeather()
-    elif command == "feed":
+    elif command == "feed" or command == "feet":
         getRSS()
     elif command == "alarm":
         setAlarm()

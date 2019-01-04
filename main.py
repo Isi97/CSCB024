@@ -1,4 +1,4 @@
-import configparser
+import ConfigParser
 
 import speech_recognition as sr
 import wx
@@ -7,7 +7,7 @@ import commands
 
 recognizer = sr.Recognizer()
 
-config = configparser.ConfigParser()
+config = ConfigParser.ConfigParser()
 config.read('settings.ini')
 
 commandString = ""
@@ -109,7 +109,7 @@ class MainWindow(wx.Frame):
             self.labelAdjust.Label = "Comprehension speed normal"
 
     def getAudio(self):
-        with sr.Microphone() as source: # index = can be added as a parameter for Microphone in the event of multiple connected audio inputs
+        with sr.Microphone(device_index=2) as source: # index = can be added as a parameter for Microphone in the event of multiple connected audio inputs
             if self.adjustMode: 
                 recognizer.adjust_for_ambient_noise(source)
             self.output("Listening for commands: ")
@@ -157,8 +157,13 @@ class MainWindow(wx.Frame):
 
     def loadCommands(self):
         self.commandCombo.SetItems(commands.getCommandList())
+    def getLine(self):
+        line_number = len( self.console.GetRange( 0, self.console.GetInsertionPoint() ).split("\n") )
+        return self.console.GetLineText(line_number-2)
             
-# print(sr.Microphone.list_microphone_names()) #use this to debug device indexes when running on new machine
+#print(sr.Microphone.list_microphone_names()) #use this to debug device indexes when running on new machine
+# for index, name in enumerate(sr.Microphone.list_microphone_names()):
+#   print("Microphone with name \"{1}\" found for `Microphone(device_index={0})`".format(index, name))
 
 
 
@@ -167,7 +172,8 @@ def initialize():
     frame = MainWindow()
 
     # Assigning values to the commands module which are needclsed to interract with the GUI
-    commands.initialize(frame=frame, code=config['SETTINGS']['weathercode'])
+    wc = config.get("SETTINGS","weathercode")
+    commands.initialize(frame=frame, code=wc)
 
     frame.loadCommands()
     frame.output("Finished loading.")
