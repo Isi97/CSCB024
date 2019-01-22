@@ -37,7 +37,8 @@ def loadPlugins():
                 fname, ext = os.path.splitext(f)
                 if ext == '.py' and fname != 'example':
                         module = __import__(fname)
-                        plugins[fname] = module.Plugin(output, showDialog)
+                        if hasattr(module, 'Plugin') :
+                                plugins[fname] = module.Plugin(output, showDialog)
         sys.path.pop(0)
 
         for p in plugins.values():

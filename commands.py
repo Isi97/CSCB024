@@ -13,11 +13,11 @@ import pluginManager
 if platform == "linux" or platform == "linux2":
     tts = pyttsx3.init() 
 else:
-    # this driver is windows specific, espeak for other non-max platforms 
+    # this driver is windows specific, espeak for other non-mac platforms 
     tts = pyttsx3.init('sapi5') 
 
 
-tts.setProperty('rate', 150) #default rate is a bit too robotic, 150 makes it less so
+tts.setProperty('rate', 150) #default rate is a bit too robotic, 150 makes it a bit better
 weatherCode = "undeclared"
 
 # this variable will be populated with a wx.FRAME object when this module is loaded from the main file
@@ -36,10 +36,12 @@ def initialize(frame, code):
 def getCommand(command):
     if command == "exit":
         exit()
-    elif command.startswith("repeat") or command.startswith("say"):
+    elif command.startswith("say"):
         temp = command.split(' ', 1)
         if len(temp) > 1:
             say(temp[1])
+    elif command == "repeat":
+        say(uinterface.getLine())
     elif command == "date" or command == "calendar":
         date = datetime.now()
         say(date.strftime('%d') + "th of " + date.strftime('%B'))
@@ -58,9 +60,8 @@ def getCommand(command):
     elif command == "alarm":
         setAlarm()
     elif command == "help":
-        uinterface.console.Clear()
         printCommandList()
-    else:
+    else: 
         pluginManager.executeCommand(command)
 
 def say(text):
@@ -97,6 +98,7 @@ def alarm(seconds):
     uinterface.console.AppendText("\n\n###Alarm Completed###\n\n")
 
 def printCommandList():
+    uinterface.console.Clear()
     uinterface.console.AppendText("Built-In Commands: \n")
     for k in commandList:
         uinterface.console.AppendText("\t"+k+"\n")

@@ -157,7 +157,10 @@ class MainWindow(wx.Frame):
 
     def loadCommands(self):
         self.commandCombo.SetItems(commands.getCommandList())
-            
+    
+    def getLine(self):
+        line_number = len( self.console.GetRange( 0, self.console.GetInsertionPoint() ).split("\n") )
+        return self.console.GetLineText(line_number-3)
 # print(sr.Microphone.list_microphone_names()) #use this to debug device indexes when running on new machine
 
 
